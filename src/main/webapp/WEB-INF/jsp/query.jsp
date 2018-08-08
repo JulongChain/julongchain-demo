@@ -8,9 +8,9 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <html>
 <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>聚龙链演示平台</title>
     <link href="${pageContext.request.contextPath}/resources/css/style.css" rel="stylesheet">
-
 </head>
 <body>
 <script type="text/javascript">
@@ -27,11 +27,11 @@
 </script>
 
 
-<div style="width: inherit;height: 980px;padding-top: 20%;" class="query">
+<div style="width: inherit;height: 980px;padding-top: 12%;" class="query">
     <%--background:url(${pageContext.request.contextPath}/resources/pic/12.jpg);--%>
-    <div style="margin-left:45%;margin-right:35%;">
-
-    <form action="/sc/query" style="margin-right: inherit" name="baseForm">
+    <div style="margin-left:39%;margin-right:41%;">
+        <h1><a href="/sc/jump" style="color:gold;text-decoration:none;">聚龙链演示平台</a> </h1>
+    <form action="/sc/query" style="margin-left: 10%;margin-right:10%" name="baseForm">
         <h1>查询</h1><input type="text" name="name" placeholder="用户名" id="name"><br><br>
         <%--金额：<input type="text" name="money"><br><br>--%>
         <div style="margin-left: 40%">

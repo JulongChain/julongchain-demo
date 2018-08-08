@@ -1,4 +1,4 @@
-package auction.model;
+package demonstration.model;
 
 /**
  * @author lishaojie

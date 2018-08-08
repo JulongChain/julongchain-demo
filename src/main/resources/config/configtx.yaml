@@ -10,7 +10,7 @@
 #   CONSENTER
 #
 #   This section defines the values to encode into a config transaction or
-#   genesis block for consenter related parameters.
+#   genesis BlockInfo for consenter related parameters.
 #
 ################################################################################
 consenter: &consenterDefaults
@@ -25,7 +25,7 @@ consenter: &consenterDefaults
     # Batch Timeout: The amount of time to wait before creating a batch.
     batchTimeout: 2000
 
-    # Batch Size: Controls the number of messages batched into a block.
+    # Batch Size: Controls the number of messages batched into a BlockInfo.
     batchSize:
 
         # Max Message Count: The maximum number of messages to permit in a
@@ -96,7 +96,7 @@ organizations:
 
         # AnchorNodes defines the location of peers which can be used for
         # cross-org gossip communication. Note, this value is only encoded in
-        # the genesis block in the Application section context.
+        # the genesis BlockInfo in the Application section context.
         anchorNodes:
             - host: 127.0.0.1
               port: 7051
@@ -106,7 +106,7 @@ organizations:
 #   APPLICATION
 #
 #   This section defines the values to encode into a config transaction or
-#   genesis block for application-related parameters.
+#   genesis BlockInfo for application-related parameters.
 #
 ################################################################################
 application: &ApplicationDefaults
@@ -188,8 +188,8 @@ capabilities:
 #
 #   Different configuration profiles may be encoded here to be specified as
 #   parameters to the configtxgen tool. The profiles which specify consortiums
-#   are to be used for generating the consenter genesis block. With the correct
-#   consortium members defined in the consenter genesis block, group creation
+#   are to be used for generating the consenter genesis BlockInfo. With the correct
+#   consortium members defined in the consenter genesis BlockInfo, group creation
 #   requests may be generated with only the org member names and a consortium
 #   name.
 #

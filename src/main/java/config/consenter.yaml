@@ -52,21 +52,21 @@ general:
     # Log Format:  The format string to use when logging.  Especially useful to disable color logging
     logFormat: '%{color}%{time:2006-01-02 15:04:05.000 MST} [%{module}] %{shortfunc} -> %{level:.4s} %{id:03x}%{color:reset} %{message}'
 
-    # Genesis method: The method by which the genesis block for the orderer
+    # Genesis method: The method by which the genesis BlockInfo for the orderer
     # system channel is specified. Available options are "provisional", "file":
     #  - provisional: Utilizes a genesis profile, specified by GenesisProfile,
-    #                 to dynamically generate a new genesis block.
-    #  - file: Uses the file provided by GenesisFile as the genesis block.
+    #                 to dynamically generate a new genesis BlockInfo.
+    #  - file: Uses the file provided by GenesisFile as the genesis BlockInfo.
     genesisMethod: provisional
 
     # Genesis profile: The profile to use to dynamically generate the genesis
-    # block to use when initializing the orderer system channel and
+    # BlockInfo to use when initializing the orderer system channel and
     # GenesisMethod is set to "provisional". See the configtx.yaml file for the
     # descriptions of the available profiles. Ignored if GenesisMethod is set to
     # "file".
     genesisProfile: SampleDevModeSolo
 
-    # Genesis file: The file containing the genesis block to use when
+    # Genesis file: The file containing the genesis BlockInfo to use when
     # initializing the orderer system channel and GenesisMethod is set to
     # "file". Ignored if GenesisMethod is set to "provisional".
     genesisFile: genesisblock
@@ -136,10 +136,10 @@ fileLedger:
 ramLedger:
 
     # History Size: The number of blocks that the RAM ledger is set to retain.
-    # WARNING: Appending a block to the ledger might cause the oldest block in
+    # WARNING: Appending a BlockInfo to the ledger might cause the oldest BlockInfo in
     # the ledger to be dropped in order to limit the number total number blocks
-    # to HistorySize. For example, if history size is 10, when appending block
-    # 10, block 0 (the genesis block!) will be dropped to make room for block 10.
+    # to HistorySize. For example, if history size is 10, when appending BlockInfo
+    # 10, BlockInfo 0 (the genesis BlockInfo!) will be dropped to make room for BlockInfo 10.
     historySize: 1000
 
 ################################################################################

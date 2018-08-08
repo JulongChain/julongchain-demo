@@ -155,7 +155,7 @@ node:
         useLeaderElection: true
         # Statically defines node to be an organization "leader",
         # where this means that current node will maintain connection
-        # with ordering service and disseminate block across nodes in
+        # with ordering service and disseminate BlockInfo across nodes in
         # its own organization
         orgLeader: false
 
@@ -185,7 +185,7 @@ node:
         stateInfoRetentionInterval: 0
         # Time from startup certificates are included in Alive messages(unit: second)
         publishCertPeriod: 10000
-        # Should we skip verifying block messages or not (currently not in use)
+        # Should we skip verifying BlockInfo messages or not (currently not in use)
         skipBlockVerification: false
         # Dial timeout(unit: second)
         dialTimeout: 3000
@@ -222,8 +222,8 @@ node:
             leaderElectionDuration: 5000
 
         privateData:
-            # pullRetryThreshold determines the maximum duration of time private data corresponding for a given block
-            # would be attempted to be pulled from nodes until the block would be committed without the private data
+            # pullRetryThreshold determines the maximum duration of time private data corresponding for a given BlockInfo
+            # would be attempted to be pulled from nodes until the BlockInfo would be committed without the private data
             pullRetryThreshold: 60000
             # As private data enters the transient store, it is associated with the node's ledger's height at that time.
             # transientstoreMaxBlockRetention defines the maximum difference between the current ledger's height upon commit,
@@ -245,7 +245,7 @@ node:
 
         # timeout duration for producer to send an event.
         # if < 0, if buffer full, unblocks immediately and not send
-        # if 0, if buffer full, will block and guarantee the event will be sent out
+        # if 0, if buffer full, will BlockInfo and guarantee the event will be sent out
         # if > 0, if buffer full, blocks till timeout
         timeout: 10
 
@@ -586,7 +586,7 @@ ledger:
        # Warm indexes after every N blocks.
        # This option warms any indexes that have been
        # deployed to CouchDB after every N blocks.
-       # A value of 1 will warm indexes after every block commit,
+       # A value of 1 will warm indexes after every BlockInfo commit,
        # to ensure fast selector queries.
        # Increasing the value may improve write efficiency of node and CouchDB,
        # but may degrade query response time.
