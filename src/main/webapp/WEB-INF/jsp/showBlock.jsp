@@ -20,15 +20,15 @@
 <div class="container">
 
     <header style="margin-top:40px">
-        <h1>聚龙链区块信息查看<span>据ID查看</span></h1>
+        <h1>聚龙链区块信息查看</h1>
     </header>
     <div class="component">
         <h2>最新块信息</h2>
-        <p>区块ID：交易id；当前区块HASH值；前一区块HASH值.</p>
+        <p>最新区块号；交易id；当前区块HASH值；前一区块HASH值.</p>
         <table>
             <thead>
             <tr>
-                <th>区块ID</th>
+                <th>最新区块号</th>
                 <th>交易id</th>
                 <th>当前区块HASH值</th>
                 <th>前一区块HASH值</th>

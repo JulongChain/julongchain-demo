@@ -3,6 +3,7 @@ package demonstration.controller;
 import demonstration.model.BlockInfo;
 import demonstration.model.Massage;
 import demonstration.model.MoveModel;
+import demonstration.model.Point;
 import demonstration.operations.NodeSmartContract;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
@@ -28,11 +29,12 @@ import java.util.List;
 @RequestMapping("/sc")
 public class SmartContractController {
 
-    private String nodeHost = "192.168.1.90";
-    private int nodePort = 7051;
-    private String consenterHost = "192.168.1.90";
-    private int consenterPort = 7050;
+//    private String nodeHost = "192.168.1.155";
+//    private int nodePort = 10051;
+//    private String point.getConsenterHost() = "192.168.1.155";
+//    private int consenterPort = 7050;
 
+    private Point point = new Point();
 
     @RequestMapping("/jump")
     public ModelAndView jump(HttpServletRequest request) {
@@ -43,9 +45,14 @@ public class SmartContractController {
             type = "main";
         }
         if (type.equals("block")) {
-            ModelAndView a = new ModelAndView("showBlock");
+            ModelAndView block = new ModelAndView("showBlock");
             BlockInfo blockInfo = block();
-            a.addObject(blockInfo);
+            block.addObject(blockInfo);
+            return block;
+        }
+        if (type.equals("point")) {
+            ModelAndView a = new ModelAndView("point");
+            a.addObject(point);
             return a;
         }
         return new ModelAndView(type);
@@ -78,7 +85,7 @@ public class SmartContractController {
         //Massage message=new Massage();
         try {
             NodeSmartContract nodeSmartContract = new NodeSmartContract(Node.getInstance());
-            message = nodeSmartContract.invoke(consenterHost, consenterPort, nodeHost, nodePort, "myGroup", "mycc", "1.0", invokeinput);
+            message = nodeSmartContract.invoke(point.getConsenterHost(), point.getConsenterPort(), point.getNodeHost(), point.getNodePort(), "myGroup", "mycc", "1.0", invokeinput);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -93,7 +100,6 @@ public class SmartContractController {
             message0.setValue(message);
             view.addObject(message0);
         }
-
 
         return view;
     }
@@ -126,7 +132,7 @@ public class SmartContractController {
         List<Massage> Massage = null;
         try {
             NodeSmartContract nodeSmartContract = new NodeSmartContract(Node.getInstance());
-            String queryResponseStr = nodeSmartContract.query(nodeHost, nodePort, "myGroup", "mycc", queryinput);
+            String queryResponseStr = nodeSmartContract.query(point.getConsenterHost(), point.getConsenterPort(), point.getNodeHost(), point.getNodePort(), "myGroup", "mycc", queryinput);
 
             Massage = JSON.parseArray(queryResponseStr, Massage.class);
             message.setName(Massage.get(0).getName());
@@ -151,7 +157,7 @@ public class SmartContractController {
 
         SmartContractPackage.SmartContractInput input = null;
 
-        long height=3;
+        long height = 3;
         SmartContractPackage.SmartContractInput.Builder inputBuilder = SmartContractPackage.SmartContractInput.newBuilder();
         for (int i = 0; i < ctorJSONArray.size(); i++) {
             inputBuilder.addArgs(ByteString.copyFrom(ctorJSONArray.getString(i).getBytes()));
@@ -159,12 +165,12 @@ public class SmartContractController {
         input = inputBuilder.build();
         try {
             nodeSmartContract = new NodeSmartContract(Node.getInstance());
-            height= nodeSmartContract.height(nodeHost, nodePort, "myGroup", "qssc", input);
+            height = nodeSmartContract.height(point.getConsenterHost(), point.getConsenterPort(), point.getNodeHost(), point.getNodePort(), "myGroup", "qssc", input);
         } catch (NodeException e) {
             e.printStackTrace();
         }
 
-        String bn = String.valueOf(height-1);
+        String bn = String.valueOf(height - 1);
 
         String queryctor = "{'args':['GetBlockByNumber','myGroup','" + bn + "']}";
 
@@ -182,8 +188,8 @@ public class SmartContractController {
         queryinput = queryinputBuilder.build();
 
         try {
-           // NodeSmartContract nodeSmartContract = new NodeSmartContract(Node.getInstance());
-            String queryResponseStr = nodeSmartContract.block(nodeHost, nodePort, "myGroup", "qssc", queryinput);
+            // NodeSmartContract nodeSmartContract = new NodeSmartContract(Node.getInstance());
+            String queryResponseStr = nodeSmartContract.block(point.getConsenterHost(), point.getConsenterPort(), point.getNodeHost(), point.getNodePort(), "myGroup", "qssc", queryinput);
             blockInfo = JSON.parseObject(queryResponseStr, BlockInfo.class);
         } catch (Exception e) {
             e.printStackTrace();
@@ -194,10 +200,10 @@ public class SmartContractController {
 
     @RequestMapping("/point")
     public ModelAndView point(HttpServletRequest request) {
-        nodeHost = request.getParameter("nodeHost");
-        nodePort = Integer.parseInt(request.getParameter("nodePort"));
-        consenterHost = request.getParameter("consenterHost");
-        consenterPort = Integer.parseInt(request.getParameter("consenterPort"));
+        point.setNodeHost(request.getParameter("nodeHost"));
+        point.setNodePort(Integer.parseInt(request.getParameter("nodePort")));
+        point.setConsenterHost(request.getParameter("consenterHost"));
+        point.setConsenterPort(Integer.parseInt(request.getParameter("consenterPort")));
 
         ModelAndView view = new ModelAndView("main");
         //view.addObject(block);

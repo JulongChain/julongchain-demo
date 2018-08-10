@@ -53,7 +53,7 @@ public class NodeSmartContract {
     }
 
 
-    public String invoke(String ip, int port, String endorserhost, int endorserPort, String groupId, String scName, String scLanguage, SmartContractPackage
+    public String invoke(String consenterHost, int consenterPort, String nodeHost, int nodePort, String groupId, String scName, String scLanguage, SmartContractPackage
             .SmartContractInput input) throws NodeException {
         SmartContractPackage.SmartContractInvocationSpec sciSpec = SpecHelper.buildInvocationSpec(scName, input);
 
@@ -84,16 +84,171 @@ public class NodeSmartContract {
 
         //背书
 //        EndorserClient client = new EndorserClient(ENDORSER_HOST, ENDORSER__PORT);
-        EndorserClient client = new EndorserClient(endorserhost, endorserPort);
+        EndorserClient client = new EndorserClient(nodeHost, nodePort);
         ProposalResponsePackage.ProposalResponse proposalResponse = client.sendProcessProposal(signedProposal);
+        stutdown(consenterHost,consenterPort,proposal, identity, proposalResponse);
 
+        return "success";
+    }
+
+    public long height(String consenterHost, int consenterPort, String nodeHost, int nodePort, String groupId, String smartContractName, SmartContractPackage.SmartContractInput input) throws NodeException {
+        SmartContractPackage.SmartContractInvocationSpec spec = SpecHelper.buildInvocationSpec(smartContractName, input);
+
+        ISigningIdentity identity = GlobalMspManagement.getLocalMsp().getDefaultSigningIdentity();
+
+        byte[] creator = identity.getIdentity().serialize();
+
+        byte[] nonce = new byte[0];
+        try {
+            nonce = CspManager.getDefaultCsp().rng(24, null);
+        } catch (JavaChainException e) {
+            log.error(e.getMessage(), e);
+        }
+
+        String txId = null;
+        try {
+            txId = ProposalUtils.computeProposalTxID(creator, nonce);
+        } catch (JavaChainException e) {
+            log.error(e.getMessage(), e);
+            throw new NodeException("Generate txId fail");
+        }
+
+        ProposalPackage.Proposal proposal = ProposalUtils.buildSmartContractProposal(Common.HeaderType
+                .ENDORSER_TRANSACTION, groupId, txId, spec, nonce, creator, null);
+        ProposalPackage.SignedProposal signedProposal = ProposalUtils.buildSignedProposal(proposal, identity);
+
+        EndorserClient client = new EndorserClient(nodeHost, nodePort);
+        ProposalResponsePackage.ProposalResponse proposalResponse = client.sendProcessProposal(signedProposal);
+        stutdown(consenterHost,consenterPort,proposal, identity, proposalResponse);
+
+        long height = 0;
+        ByteString payload = proposalResponse.getResponse().getPayload();
+        try {
+            Ledger.BlockchainInfo xxx = Ledger.BlockchainInfo.parseFrom(payload);
+            height = xxx.getHeight();
+        } catch (InvalidProtocolBufferException e) {
+            e.printStackTrace();
+        }
+
+        return height;
+    }
+
+    public String block(String consenterHost, int consenterPort, String nodeHost, int nodePort,String groupId, String smartContractName, SmartContractPackage.SmartContractInput input) throws NodeException {
+        SmartContractPackage.SmartContractInvocationSpec spec = SpecHelper.buildInvocationSpec(smartContractName, input);
+
+        ISigningIdentity identity = GlobalMspManagement.getLocalMsp().getDefaultSigningIdentity();
+
+        byte[] creator = identity.getIdentity().serialize();
+
+        byte[] nonce = new byte[0];
+        try {
+            nonce = CspManager.getDefaultCsp().rng(24, null);
+        } catch (JavaChainException e) {
+            log.error(e.getMessage(), e);
+        }
+
+        String txId = null;
+        try {
+            txId = ProposalUtils.computeProposalTxID(creator, nonce);
+        } catch (JavaChainException e) {
+            log.error(e.getMessage(), e);
+            throw new NodeException("Generate txId fail");
+        }
+
+        ProposalPackage.Proposal proposal = ProposalUtils.buildSmartContractProposal(Common.HeaderType
+                .ENDORSER_TRANSACTION, groupId, txId, spec, nonce, creator, null);
+        ProposalPackage.SignedProposal signedProposal = ProposalUtils.buildSignedProposal(proposal, identity);
+
+        EndorserClient client = new EndorserClient(nodeHost, nodePort);
+        ProposalResponsePackage.ProposalResponse proposalResponse = client.sendProcessProposal(signedProposal);
+        stutdown(consenterHost,consenterPort,proposal, identity, proposalResponse);
+
+        ByteString payload = proposalResponse.getResponse().getPayload();
+
+        log.info("Query Result: " + payload);
+
+        Common.Block block = null;
+        EnvelopeVO envelopeVO = new EnvelopeVO();
+        try {
+            block = Common.Block.parseFrom(payload);
+            envelopeVO.parseFrom(Common.Envelope.parseFrom(block.getData().getData(0)));
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        BlockInfo BI = new BlockInfo();
+        if (block != null) {
+            byte[] dataHash = block.getHeader().getDataHash().toByteArray();//当前hash
+            byte[] previousHash = block.getHeader().getPreviousHash().toByteArray();//前hash
+            long numid = block.getHeader().getNumber();//块号
+            //String timeStamp = envelopeVO.getPayloadVO().getGroupHeaderVO().getTimeStamp().toString();
+            String txid = envelopeVO.getPayloadVO().getGroupHeaderVO().getTxId();//交易id
+            IProtoVO rw = envelopeVO.getPayloadVO().getDataVO();
+
+            String dh = DatatypeConverter.printHexBinary(dataHash);
+            String ph = DatatypeConverter.printHexBinary(previousHash);
+
+
+            BI.setDataHash(dh);
+            BI.setPreviousHash(ph);
+            BI.setNumid(numid);
+            BI.setTxid(txid);
+        }
+
+
+        String jsonString = JSONObject.toJSONString(BI);
+        return jsonString;
+    }
+
+    public String query(String consenterHost, int consenterPort, String nodeHost, int nodePort, String groupId, String smartContractName, SmartContractPackage.SmartContractInput input) throws NodeException {
+        SmartContractPackage.SmartContractInvocationSpec spec = SpecHelper.buildInvocationSpec(smartContractName, input);
+
+        ISigningIdentity identity = GlobalMspManagement.getLocalMsp().getDefaultSigningIdentity();
+
+        byte[] creator = identity.getIdentity().serialize();
+
+        byte[] nonce = new byte[0];
+        try {
+            nonce = CspManager.getDefaultCsp().rng(24, null);
+        } catch (JavaChainException e) {
+            log.error(e.getMessage(), e);
+        }
+
+        String txId = null;
+        try {
+            txId = ProposalUtils.computeProposalTxID(creator, nonce);
+        } catch (JavaChainException e) {
+            log.error(e.getMessage(), e);
+            throw new NodeException("Generate txId fail");
+        }
+
+        ProposalPackage.Proposal proposal = ProposalUtils.buildSmartContractProposal(Common.HeaderType
+                .ENDORSER_TRANSACTION, groupId, txId, spec, nonce, creator, null);
+        ProposalPackage.SignedProposal signedProposal = ProposalUtils.buildSignedProposal(proposal, identity);
+
+        EndorserClient client = new EndorserClient(nodeHost, nodePort);
+        ProposalResponsePackage.ProposalResponse proposalResponse = client.sendProcessProposal(signedProposal);
+        stutdown(consenterHost,consenterPort,proposal, identity, proposalResponse);
+
+        ByteString payload = proposalResponse.getResponse().getPayload();
+        String message = proposalResponse.getResponse().getMessage();
+        System.out.println("============message:" + message);
+
+
+        log.info("Query Result: " + message);
+//                .getPayload().toStringUtf8());
+        return message;
+    }
+
+
+    public void stutdown(String nodeHost, int nodePort,ProposalPackage.Proposal proposal,ISigningIdentity identity,ProposalResponsePackage.ProposalResponse proposalResponse){
         try {
             Common.Envelope signedTxEnvelope = EnvelopeHelper.createSignedTxEnvelope(proposal, identity, proposalResponse);
 
             EnvelopeVO envelopeVO = new EnvelopeVO();
             envelopeVO.parseFrom(signedTxEnvelope);
 
-            final IBroadcastClient broadcastClient = new BroadcastClient(ip, port);
+            final IBroadcastClient broadcastClient = new BroadcastClient(nodeHost, nodePort);
             broadcastClient.send(signedTxEnvelope, new StreamObserver<Ab.BroadcastResponse>() {
                 @Override
                 public void onNext(Ab.BroadcastResponse value) {
@@ -122,176 +277,11 @@ public class NodeSmartContract {
 
         } catch (Exception e) {
             log.error(e.getMessage(), e);
-            throw new NodeException(e);
+            try {
+                throw new NodeException(e);
+            } catch (NodeException e1) {
+                e1.printStackTrace();
+            }
         }
-
-//        try {
-//            Thread.sleep(5000);
-//        } catch (InterruptedException e) {
-//            log.error(e.getMessage(), e);
-//        }
-        return "success";
-    }
-
-    public long height(String endorserhost, int endorserPort, String groupId, String smartContractName, SmartContractPackage.SmartContractInput input) throws NodeException {
-        SmartContractPackage.SmartContractInvocationSpec spec = SpecHelper.buildInvocationSpec(smartContractName, input);
-
-        ISigningIdentity identity = GlobalMspManagement.getLocalMsp().getDefaultSigningIdentity();
-
-        byte[] creator = identity.getIdentity().serialize();
-
-        byte[] nonce = new byte[0];
-        try {
-            nonce = CspManager.getDefaultCsp().rng(24, null);
-        } catch (JavaChainException e) {
-            log.error(e.getMessage(), e);
-        }
-
-        String txId = null;
-        try {
-            txId = ProposalUtils.computeProposalTxID(creator, nonce);
-        } catch (JavaChainException e) {
-            log.error(e.getMessage(), e);
-            throw new NodeException("Generate txId fail");
-        }
-
-        ProposalPackage.Proposal proposal = ProposalUtils.buildSmartContractProposal(Common.HeaderType
-                .ENDORSER_TRANSACTION, groupId, txId, spec, nonce, creator, null);
-        ProposalPackage.SignedProposal signedProposal = ProposalUtils.buildSignedProposal(proposal, identity);
-
-        EndorserClient client = new EndorserClient(endorserhost, endorserPort);
-        ProposalResponsePackage.ProposalResponse proposalResponse = client.sendProcessProposal(signedProposal);
-        long height=0;
-        ByteString payload = proposalResponse.getResponse().getPayload();
-        try {
-            Ledger.BlockchainInfo xxx= Ledger.BlockchainInfo.parseFrom(payload);
-            height=xxx.getHeight();
-        } catch (InvalidProtocolBufferException e) {
-            e.printStackTrace();
-        }
-
-return height;
-    }
-
-    public String block(String endorserhost, int endorserPort, String groupId, String smartContractName, SmartContractPackage.SmartContractInput input) throws NodeException {
-        SmartContractPackage.SmartContractInvocationSpec spec = SpecHelper.buildInvocationSpec(smartContractName, input);
-
-        ISigningIdentity identity = GlobalMspManagement.getLocalMsp().getDefaultSigningIdentity();
-
-        byte[] creator = identity.getIdentity().serialize();
-
-        byte[] nonce = new byte[0];
-        try {
-            nonce = CspManager.getDefaultCsp().rng(24, null);
-        } catch (JavaChainException e) {
-            log.error(e.getMessage(), e);
-        }
-
-        String txId = null;
-        try {
-            txId = ProposalUtils.computeProposalTxID(creator, nonce);
-        } catch (JavaChainException e) {
-            log.error(e.getMessage(), e);
-            throw new NodeException("Generate txId fail");
-        }
-
-        ProposalPackage.Proposal proposal = ProposalUtils.buildSmartContractProposal(Common.HeaderType
-                .ENDORSER_TRANSACTION, groupId, txId, spec, nonce, creator, null);
-        ProposalPackage.SignedProposal signedProposal = ProposalUtils.buildSignedProposal(proposal, identity);
-
-        EndorserClient client = new EndorserClient(endorserhost, endorserPort);
-        ProposalResponsePackage.ProposalResponse proposalResponse = client.sendProcessProposal(signedProposal);
-
-        ByteString payload = proposalResponse.getResponse().getPayload();
-
-        log.info("Query Result: " + payload);
-
-        Common.Block block = null;
-        EnvelopeVO envelopeVO = new EnvelopeVO();
-        try {
-            block = Common.Block.parseFrom(payload);
-            envelopeVO.parseFrom(Common.Envelope.parseFrom(block.getData().getData(0)));
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        BlockInfo BI=new BlockInfo();
-        if (block != null) {
-            byte[] dataHash = block.getHeader().getDataHash().toByteArray();//当前hash
-            byte[] previousHash = block.getHeader().getPreviousHash().toByteArray();//前hash
-            long numid = block.getHeader().getNumber();//块号
-            //String timeStamp = envelopeVO.getPayloadVO().getGroupHeaderVO().getTimeStamp().toString();
-            String txid = envelopeVO.getPayloadVO().getGroupHeaderVO().getTxId();//交易id
-            IProtoVO rw = envelopeVO.getPayloadVO().getDataVO();
-            String aa = rw.toString();
-
-            String dh = DatatypeConverter.printHexBinary(dataHash);
-            String ph = DatatypeConverter.printHexBinary(previousHash);
-
-
-        BI.setDataHash(dh);
-        BI.setPreviousHash(ph);
-        BI.setNumid(numid);
-        BI.setTxid(txid);
-    }
-//        Common.Envelope envelope = null;
-//        try {
-//            envelope = Common.Envelope.parseFrom(block.getData().getData(0));
-//
-//            Common.Payload payload1 = Common.Payload.parseFrom(envelope.getPayload());
-//            TransactionPackage.Transaction transaction = TransactionPackage.Transaction.parseFrom(payload1.getData());
-//            TransactionPackage.TransactionAction transactionAction = transaction.getActions(0);
-//            TransactionPackage.SmartContractActionPayload scaPayload = TransactionPackage.SmartContractActionPayload.parseFrom(transactionAction.getPayload());
-//            TransactionPackage.SmartContractEndorsedAction sceaPayload = scaPayload.getAction();
-//            ProposalResponsePackage.ProposalResponsePayload prPayload = ProposalResponsePackage.ProposalResponsePayload.parseFrom(sceaPayload.getProposalResponsePayload());
-//            ProposalPackage.SmartContractAction resPayload = ProposalPackage.SmartContractAction.parseFrom(prPayload.getExtension());
-//            Rwset.TxReadWriteSet txReadWriteSet = Rwset.TxReadWriteSet.parseFrom(resPayload.getResults());
-//            KvRwset.KVRWSet kvrwSet = KvRwset.KVRWSet.parseFrom(txReadWriteSet.getNsRwset(0).getRwset());
-//            System.out.print(1);
-//        } catch (InvalidProtocolBufferException e) {
-//            e.printStackTrace();
-//        }
-
-        String jsonString = JSONObject.toJSONString(BI);
-        return jsonString;
-    }
-
-    public String query(String endorserhost, int endorserPort, String groupId, String smartContractName, SmartContractPackage.SmartContractInput input) throws NodeException {
-        SmartContractPackage.SmartContractInvocationSpec spec = SpecHelper.buildInvocationSpec(smartContractName, input);
-
-        ISigningIdentity identity = GlobalMspManagement.getLocalMsp().getDefaultSigningIdentity();
-
-        byte[] creator = identity.getIdentity().serialize();
-
-        byte[] nonce = new byte[0];
-        try {
-            nonce = CspManager.getDefaultCsp().rng(24, null);
-        } catch (JavaChainException e) {
-            log.error(e.getMessage(), e);
-        }
-
-        String txId = null;
-        try {
-            txId = ProposalUtils.computeProposalTxID(creator, nonce);
-        } catch (JavaChainException e) {
-            log.error(e.getMessage(), e);
-            throw new NodeException("Generate txId fail");
-        }
-
-        ProposalPackage.Proposal proposal = ProposalUtils.buildSmartContractProposal(Common.HeaderType
-                .ENDORSER_TRANSACTION, groupId, txId, spec, nonce, creator, null);
-        ProposalPackage.SignedProposal signedProposal = ProposalUtils.buildSignedProposal(proposal, identity);
-
-        EndorserClient client = new EndorserClient(endorserhost, endorserPort);
-        ProposalResponsePackage.ProposalResponse proposalResponse = client.sendProcessProposal(signedProposal);
-
-        ByteString payload = proposalResponse.getResponse().getPayload();
-        String message = proposalResponse.getResponse().getMessage();
-        System.out.println("============message:" + message);
-
-
-        log.info("Query Result: " + message);
-//                .getPayload().toStringUtf8());
-        return message;
     }
 }
