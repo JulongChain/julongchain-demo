@@ -86,12 +86,54 @@ public class NodeSmartContract {
 //        EndorserClient client = new EndorserClient(ENDORSER_HOST, ENDORSER__PORT);
         EndorserClient client = new EndorserClient(nodeHost, nodePort);
         ProposalResponsePackage.ProposalResponse proposalResponse = client.sendProcessProposal(signedProposal);
-        stutdown(consenterHost,consenterPort,proposal, identity, proposalResponse);
+
+        try {
+            Common.Envelope signedTxEnvelope = EnvelopeHelper.createSignedTxEnvelope(proposal, identity, proposalResponse);
+
+            EnvelopeVO envelopeVO = new EnvelopeVO();
+            envelopeVO.parseFrom(signedTxEnvelope);
+
+            final IBroadcastClient broadcastClient = new BroadcastClient(consenterHost, consenterPort);
+            broadcastClient.send(signedTxEnvelope, new StreamObserver<Ab.BroadcastResponse>() {
+                @Override
+                public void onNext(Ab.BroadcastResponse value) {
+                    log.info("Broadcast onNext");
+                    broadcastClient.close();
+
+                    //收到响应消息，判断是否是200消息
+                    if (Common.Status.SUCCESS.equals(value.getStatus())) {
+                        log.info("invoke success");
+                    }
+                }
+
+                @Override
+                public void onError(Throwable t) {
+                    log.error("onError");
+                    log.error(t.getMessage(), t);
+                    broadcastClient.close();
+                }
+
+                @Override
+                public void onCompleted() {
+                    log.info("Broadcast completed");
+                    broadcastClient.close();
+                }
+            });
+
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            try {
+                throw new NodeException(e);
+            } catch (NodeException e1) {
+                e1.printStackTrace();
+            }
+        }
+        //stutdown(consenterHost,consenterPort,proposal, identity, proposalResponse);
 
         return "success";
     }
 
-    public long height(String consenterHost, int consenterPort, String nodeHost, int nodePort, String groupId, String smartContractName, SmartContractPackage.SmartContractInput input) throws NodeException {
+    public long height( String nodeHost, int nodePort, String groupId, String smartContractName, SmartContractPackage.SmartContractInput input) throws NodeException {
         SmartContractPackage.SmartContractInvocationSpec spec = SpecHelper.buildInvocationSpec(smartContractName, input);
 
         ISigningIdentity identity = GlobalMspManagement.getLocalMsp().getDefaultSigningIdentity();
@@ -119,7 +161,11 @@ public class NodeSmartContract {
 
         EndorserClient client = new EndorserClient(nodeHost, nodePort);
         ProposalResponsePackage.ProposalResponse proposalResponse = client.sendProcessProposal(signedProposal);
-        stutdown(consenterHost,consenterPort,proposal, identity, proposalResponse);
+
+        if (proposalResponse.getResponse().getStatus()==0) {
+            client.close();
+            log.info("query success");
+        }
 
         long height = 0;
         ByteString payload = proposalResponse.getResponse().getPayload();
@@ -133,7 +179,7 @@ public class NodeSmartContract {
         return height;
     }
 
-    public String block(String consenterHost, int consenterPort, String nodeHost, int nodePort,String groupId, String smartContractName, SmartContractPackage.SmartContractInput input) throws NodeException {
+    public String block( String nodeHost, int nodePort,String groupId, String smartContractName, SmartContractPackage.SmartContractInput input) throws NodeException {
         SmartContractPackage.SmartContractInvocationSpec spec = SpecHelper.buildInvocationSpec(smartContractName, input);
 
         ISigningIdentity identity = GlobalMspManagement.getLocalMsp().getDefaultSigningIdentity();
@@ -161,7 +207,11 @@ public class NodeSmartContract {
 
         EndorserClient client = new EndorserClient(nodeHost, nodePort);
         ProposalResponsePackage.ProposalResponse proposalResponse = client.sendProcessProposal(signedProposal);
-        stutdown(consenterHost,consenterPort,proposal, identity, proposalResponse);
+
+        if (proposalResponse.getResponse().getStatus()==0) {
+            client.close();
+            log.info("queryblock success");
+        }
 
         ByteString payload = proposalResponse.getResponse().getPayload();
 
@@ -200,7 +250,7 @@ public class NodeSmartContract {
         return jsonString;
     }
 
-    public String query(String consenterHost, int consenterPort, String nodeHost, int nodePort, String groupId, String smartContractName, SmartContractPackage.SmartContractInput input) throws NodeException {
+    public String query( String nodeHost, int nodePort, String groupId, String smartContractName, SmartContractPackage.SmartContractInput input) throws NodeException {
         SmartContractPackage.SmartContractInvocationSpec spec = SpecHelper.buildInvocationSpec(smartContractName, input);
 
         ISigningIdentity identity = GlobalMspManagement.getLocalMsp().getDefaultSigningIdentity();
@@ -228,7 +278,14 @@ public class NodeSmartContract {
 
         EndorserClient client = new EndorserClient(nodeHost, nodePort);
         ProposalResponsePackage.ProposalResponse proposalResponse = client.sendProcessProposal(signedProposal);
-        stutdown(consenterHost,consenterPort,proposal, identity, proposalResponse);
+
+
+        if (proposalResponse.getResponse().getStatus()==0) {
+            client.close();
+            log.info("query success");
+        }
+
+
 
         ByteString payload = proposalResponse.getResponse().getPayload();
         String message = proposalResponse.getResponse().getMessage();
@@ -240,48 +297,4 @@ public class NodeSmartContract {
         return message;
     }
 
-
-    public void stutdown(String nodeHost, int nodePort,ProposalPackage.Proposal proposal,ISigningIdentity identity,ProposalResponsePackage.ProposalResponse proposalResponse){
-        try {
-            Common.Envelope signedTxEnvelope = EnvelopeHelper.createSignedTxEnvelope(proposal, identity, proposalResponse);
-
-            EnvelopeVO envelopeVO = new EnvelopeVO();
-            envelopeVO.parseFrom(signedTxEnvelope);
-
-            final IBroadcastClient broadcastClient = new BroadcastClient(nodeHost, nodePort);
-            broadcastClient.send(signedTxEnvelope, new StreamObserver<Ab.BroadcastResponse>() {
-                @Override
-                public void onNext(Ab.BroadcastResponse value) {
-                    log.info("Broadcast onNext");
-                    broadcastClient.close();
-
-                    //收到响应消息，判断是否是200消息
-                    if (Common.Status.SUCCESS.equals(value.getStatus())) {
-                        log.info("invoke success");
-                    }
-                }
-
-                @Override
-                public void onError(Throwable t) {
-                    log.error("onError");
-                    log.error(t.getMessage(), t);
-                    broadcastClient.close();
-                }
-
-                @Override
-                public void onCompleted() {
-                    log.info("Broadcast completed");
-                    broadcastClient.close();
-                }
-            });
-
-        } catch (Exception e) {
-            log.error(e.getMessage(), e);
-            try {
-                throw new NodeException(e);
-            } catch (NodeException e1) {
-                e1.printStackTrace();
-            }
-        }
-    }
 }

@@ -132,7 +132,7 @@ public class SmartContractController {
         List<Massage> Massage = null;
         try {
             NodeSmartContract nodeSmartContract = new NodeSmartContract(Node.getInstance());
-            String queryResponseStr = nodeSmartContract.query(point.getConsenterHost(), point.getConsenterPort(), point.getNodeHost(), point.getNodePort(), "myGroup", "mycc", queryinput);
+            String queryResponseStr = nodeSmartContract.query(point.getNodeHost(), point.getNodePort(), "myGroup", "mycc", queryinput);
 
             Massage = JSON.parseArray(queryResponseStr, Massage.class);
             message.setName(Massage.get(0).getName());
@@ -165,7 +165,7 @@ public class SmartContractController {
         input = inputBuilder.build();
         try {
             nodeSmartContract = new NodeSmartContract(Node.getInstance());
-            height = nodeSmartContract.height(point.getConsenterHost(), point.getConsenterPort(), point.getNodeHost(), point.getNodePort(), "myGroup", "qssc", input);
+            height = nodeSmartContract.height( point.getNodeHost(), point.getNodePort(), "myGroup", "qssc", input);
         } catch (NodeException e) {
             e.printStackTrace();
         }
@@ -189,7 +189,7 @@ public class SmartContractController {
 
         try {
             // NodeSmartContract nodeSmartContract = new NodeSmartContract(Node.getInstance());
-            String queryResponseStr = nodeSmartContract.block(point.getConsenterHost(), point.getConsenterPort(), point.getNodeHost(), point.getNodePort(), "myGroup", "qssc", queryinput);
+            String queryResponseStr = nodeSmartContract.block(point.getNodeHost(), point.getNodePort(), "myGroup", "qssc", queryinput);
             blockInfo = JSON.parseObject(queryResponseStr, BlockInfo.class);
         } catch (Exception e) {
             e.printStackTrace();

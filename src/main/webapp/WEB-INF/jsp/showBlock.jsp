@@ -20,7 +20,7 @@
 <div class="container">
 
     <header style="margin-top:40px">
-        <h1>聚龙链区块信息查看</h1>
+        <h1><a href="/sc/jump" style="text-decoration:none;">聚龙链区块信息查看</a></h1>
     </header>
     <div class="component">
         <h2>最新块信息</h2>
