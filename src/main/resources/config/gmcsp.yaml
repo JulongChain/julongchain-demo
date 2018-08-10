@@ -13,7 +13,7 @@ node:
             # Location of Key Store
                 # If "", defaults to 'mspConfigPath'/keystore
                 # TODO: Ensure this is read with fabric/core/config.GetPath() once ready
-            KeyStore: D:\work\julongchain-demonstration\msp/keystore/
+            KeyStore: /usr/local/tomcat/webapps/Demonstration/WEB-INF/classes/msp/keystore/
 #          sdtgm:
 #                      # TODO: The default Hash and Security level needs refactoring to be
 #                      # fully configurable. Changing these defaults requires coordination
@@ -31,7 +31,7 @@ node:
 #                      keyStore: D:\work\Demonstration\msp/keystore/sdt/
                 #privateKeyStore: /opt/msp/keystore/privatekey.pem
     # Path on the file system where node will find MSP local configurations
-    mspConfigPath: D:\work\julongchain-demonstration\msp
+    mspConfigPath: /usr/local/tomcat/webapps/Demonstration/WEB-INF/classes/msp
     #mspConfigPath: /opt/msp
     #mspConfigPath: /root/IdeaProjects/javachain/src/main/resources/msp
 
