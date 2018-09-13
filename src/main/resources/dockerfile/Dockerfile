@@ -13,5 +13,5 @@
 # limitations under the License.
 #
 FROM tomcat:8.0-jre8
-COPY -r Demonstration/ /usr/local/tomcat/webapps/Demonstration
+COPY Demonstration/ /usr/local/tomcat/webapps/Demonstration
 COPY server.xml /usr/local/tomcat/conf/
