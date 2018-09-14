@@ -164,7 +164,10 @@ public class NodeSmartContract {
 
         if (proposalResponse.getResponse().getStatus()==0) {
             client.close();
-            log.info("query success");
+            log.info("queryheigh success");
+        }else{
+            client.close();
+            log.info(proposalResponse.getResponse().getMessage());
         }
 
         long height = 0;
@@ -211,6 +214,9 @@ public class NodeSmartContract {
         if (proposalResponse.getResponse().getStatus()==0) {
             client.close();
             log.info("queryblock success");
+        }else{
+            client.close();
+            log.info(proposalResponse.getResponse().getMessage());
         }
 
         ByteString payload = proposalResponse.getResponse().getPayload();
@@ -283,6 +289,9 @@ public class NodeSmartContract {
         if (proposalResponse.getResponse().getStatus()==0) {
             client.close();
             log.info("query success");
+        }else{
+            client.close();
+            log.info(proposalResponse.getResponse().getMessage());
         }
 
 
