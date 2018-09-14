@@ -6,10 +6,10 @@ package demonstration.model;
  * @company Dingxuan
  */
 public class Point {
-    private String nodeHost = "192.168.1.155";
-    private int nodePort = 10051;
+    private String nodeHost = "192.168.1.171";
+    private int nodePort = 7051;
 
-    private String consenterHost = "192.168.1.155";
+    private String consenterHost = "192.168.1.175";
     private int consenterPort = 7050;
 
     public String getNodeHost() {
