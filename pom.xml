@@ -405,14 +405,14 @@
                             <directory>src/main/resources</directory>
                             <targetPath>WEB-INF/classes</targetPath>
                         </resource>
-                        <resource>
+<!--                        <resource>
                             <directory>config</directory>
                             <targetPath>config</targetPath>
                         </resource>
                         <resource>
                             <directory>msp</directory>
                             <targetPath>msp</targetPath>
-                        </resource>
+                        </resource>-->
                     </webResources>
                 </configuration>
             </plugin>
